@@ -51,7 +51,7 @@ int main() {
     auto corpus= torch::data::datasets::loadTrain(TRAINFILE);
     torch::data::datasets::EmbeddingTextData text(corpus.data,corpus.vocab,opts);
     auto train_text=text.map(torch::data::transforms::Stack<>());
-    auto train_loader = torch::data::make_data_loader<torch::data::samplers::RandomSampler>(std::move(train_text), torch::data::DataLoaderOptions().batch_size(opts.train_batch_size));
+    auto train_loader = torch::data::make_data_loader<torch::data::samplers::SequentialSampler>(std::move(train_text), torch::data::DataLoaderOptions().batch_size(opts.train_batch_size));
     WordEmbedding wemb(corpus.vocab.size(),opts.dim);
     wemb.to(opts.device);
     torch::optim::Adam adam(wemb.parameters(),torch::optim::AdamOptions(0.01));
