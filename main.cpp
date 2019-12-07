@@ -16,7 +16,7 @@
 #include "data/data.h"
 #include "embedding/embedding.h"
 
-std::string TRAINFILE("/Users/panhongyan/word2vec/text8");
+std::string TRAINFILE("/Users/panhongyan/bert/sample_text.txt");
 
 template <typename DataLoader>
 void train(WordEmbedding& emb,torch::data::datasets::Options& options,DataLoader& loader,torch::optim::Optimizer& optimizer,size_t epoch,size_t data_size)
@@ -51,15 +51,15 @@ int main() {
     auto corpus= torch::data::datasets::loadTrain(TRAINFILE);
     torch::data::datasets::EmbeddingTextData text(corpus.data,corpus.vocab,opts);
     auto train_text=text.map(torch::data::transforms::Stack<>());
-    auto train_loader = torch::data::make_data_loader<torch::data::samplers::SequentialSampler>(std::move(train_text), torch::data::DataLoaderOptions().batch_size(opts.train_batch_size));
-    WordEmbedding wemb(corpus.vocab.size(),opts.dim);
-    wemb.to(opts.device);
-    torch::optim::Adam adam(wemb.parameters(),torch::optim::AdamOptions(0.01));
+    auto train_loader = torch::data::make_data_loader<torch::data::samplers::SequentialSampler>(std::move(train_text), torch::data::DataLoaderOptions().batch_size(opts.train_batch_size).workers(2));
+    auto wemb =std::make_shared<WordEmbedding>(corpus.vocab.size(),opts.dim);
+    wemb->to(opts.device);
+    torch::optim::Adam adam(wemb->parameters(),torch::optim::AdamOptions(0.01));
     size_t data_size=corpus.vocab.tsize();
     for (size_t epoch=0;epoch<opts.epoch;epoch++) {
-        train(wemb, opts, *train_loader, adam, epoch, data_size);
+        train(*wemb, opts, *train_loader, adam, epoch, data_size);
         std::cout << std::endl;
     }
-    
+    torch::save(wemb, "/Users/panhongyan/cbow/cke.pt");
     return 0;
 }
