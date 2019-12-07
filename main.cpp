@@ -30,7 +30,7 @@ void train(WordEmbedding& emb,torch::data::datasets::Options& options,DataLoader
         auto output = emb.forward(data);
         auto loss = torch::nll_loss(output, targets);
         assert(!std::isnan(loss.template item<float>()));
-        optimizer.zero_grad();
+        emb.zero_grad();
         loss.backward();
         optimizer.step();
         
@@ -44,6 +44,11 @@ void train(WordEmbedding& emb,torch::data::datasets::Options& options,DataLoader
     }
 }
 
+void test(WordEmbedding& wemb,Vocab& vocab,std::string& word)
+{
+    long id=vocab.get_id(word);
+    
+}
 
 int main() {
     torch::manual_seed(1);
@@ -60,6 +65,7 @@ int main() {
         train(*wemb, opts, *train_loader, adam, epoch, data_size);
         std::cout << std::endl;
     }
+    
     torch::save(wemb, "/Users/panhongyan/cbow/cke.pt");
     return 0;
 }
